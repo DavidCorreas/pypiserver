@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  pypiserver:
+    image: pypiserver/pypiserver:latest
+    command: run -P /data/auth/htpasswd.txt -a update,download,list /data/packages
+    container_name: pypiserver
+    volumes:
+      - type: bind
+        source: ./auth
+        target: /data/auth
+      - type: bind
+        source: ./packages
+        target: /data/packages
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: pypiserver_tunnel
+    depends_on:
+      pypiserver:
+        condition: service_healthy
+    restart: unless-stopped
+    command:
+      - tunnel
+      - --no-autoupdate
+      - run
+      - --token
+      - $TUNNEL_TOKEN
+
+
