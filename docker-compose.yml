@@ -3,7 +3,7 @@ version: '3'
 services:
   pypiserver:
     image: pypiserver/pypiserver:latest
-    command: run -P /data/auth/htpasswd.txt -a update,download,list /data/packages
+    command: run -P /data/auth/htpasswd.txt -o -a update,download,list /data/packages
     container_name: pypiserver
     volumes:
       - type: bind
